@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>材料力学 院試問題</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .problem-entry {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        .problem-entry h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .labels span {
+            display: inline-block;
+            background-color: #e0f7fa;
+            color: #007bff;
+            padding: 5px 10px;
+            border-radius: 3px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <h1>材料力学 院試問題カテゴリ</h1>
+    <div id="problems-container">
+        </div>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProblems('MaterialMechanics.json', 'problems-container');
+        });
+    </script>
+</body>
+</html>

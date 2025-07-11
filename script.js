@@ -1,5 +1,18 @@
 /**
+ * 全ての問題データを格納するグローバル変数。
+ * フィルタリングの際に元のデータを保持するために使用します。
+ */
+let allProblemsData = {};
+
+/**
+ * 現在選択されているフィルターラベルを保持するSet。
+ * 重複を避け、高速な検索を可能にします。
+ */
+let selectedLabels = new Set();
+
+/**
  * 指定されたJSONファイルから問題データを読み込み、指定されたHTMLコンテナに表示します。
+ * この関数は一度だけ呼び出され、初期データのロードと表示、およびイベントリスナーの設定を行います。
  *
  * @param {string} jsonFileName - 読み込むJSONファイルのパス。
  * @param {string} containerId - 問題を表示するHTML要素のID。
@@ -18,25 +31,69 @@ async function loadProblems(jsonFileName, containerId) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
+        allProblemsData = data; // 全てのデータをグローバル変数に保存
 
-        // キー（例: "2025_Q1"）を年と問題番号で降順にソートします。
-        // 例: 2025_Q2, 2025_Q1, 2024_Q2, 2024_Q1 ...
-        const sortedKeys = Object.keys(data).sort((a, b) => {
-            const [yearA, qNumA] = a.split('_');
-            const [yearB, qNumB] = b.split('_');
+        // 初回表示: 全ての問題を表示します
+        applyFiltersAndRender(container);
 
-            // 年で比較 (降順)
-            if (yearA !== yearB) {
-                return parseInt(yearB) - parseInt(yearA);
-            }
-            // 年が同じ場合は問題番号で比較 (昇順: Q1, Q2)
-            // もしQ2, Q1の順にしたい場合は、qNumB.localeCompare(qNumA) に変更してください。
-            return qNumA.localeCompare(qNumB);
-        });
+    } catch (error) {
+        // エラーが発生した場合、コンソールにログを出力し、ユーザーにメッセージを表示します。
+        console.error('Error loading or parsing JSON:', error);
+        container.textContent = 'データの読み込み中にエラーが発生しました。';
+    }
+}
 
-        // ソートされたキーに基づいて各問題を表示
+/**
+ * 現在選択されているフィルターに基づいて問題をフィルタリングし、HTMLコンテナに表示します。
+ *
+ * @param {HTMLElement} container - 問題を表示するHTML要素。
+ */
+function applyFiltersAndRender(container) {
+    // コンテナの内容をクリア
+    container.innerHTML = '';
+
+    let problemsToDisplay = {};
+
+    if (selectedLabels.size === 0) {
+        // フィルターが何も選択されていない場合は、全ての問題を表示
+        problemsToDisplay = allProblemsData;
+    } else {
+        // 選択された全てのラベルを含む問題のみをフィルタリング
+        problemsToDisplay = Object.fromEntries(
+            Object.entries(allProblemsData).filter(([key, entry]) => {
+                // 選択されている全てのラベルが、その問題のラベルに含まれているかチェック
+                return [...selectedLabels].every(selectedLabel => entry.labels.includes(selectedLabel));
+            })
+        );
+    }
+
+    // キー（例: "2025_Q1"）を年と問題番号で降順にソートします。
+    // 例: 2025_Q2, 2025_Q1, 2024_Q2, 2024_Q1 ...
+    const sortedKeys = Object.keys(problemsToDisplay).sort((a, b) => {
+        const [yearA, qNumA] = a.split('_');
+        const [yearB, qNumB] = b.split('_');
+
+        // 年で比較 (降順)
+        if (yearA !== yearB) {
+            return parseInt(yearB) - parseInt(yearA);
+        }
+        // 年が同じ場合は問題番号で比較 (昇順: Q1, Q2)
+        return qNumA.localeCompare(qNumB);
+    });
+
+    // ソートされたキーに基づいて各問題を表示
+    if (sortedKeys.length === 0 && selectedLabels.size > 0) {
+        // フィルター結果が0件で、かつフィルターが適用されている場合
+        const noResultsMessage = document.createElement('p');
+        noResultsMessage.textContent = '選択されたラベルに一致する問題は見つかりませんでした。';
+        noResultsMessage.style.textAlign = 'center';
+        noResultsMessage.style.marginTop = '50px';
+        noResultsMessage.style.fontSize = '1.2em';
+        noResultsMessage.style.color = '#666';
+        container.appendChild(noResultsMessage);
+    } else {
         sortedKeys.forEach(key => {
-            const entry = data[key];
+            const entry = problemsToDisplay[key];
             const problemDiv = document.createElement('div');
             problemDiv.classList.add('problem-entry');
 
@@ -54,18 +111,36 @@ async function loadProblems(jsonFileName, containerId) {
             entry.labels.forEach(label => {
                 const span = document.createElement('span');
                 span.textContent = label;
+                span.classList.add('label-tag'); // ラベルにクラスを追加
+                // 現在選択されているラベルであれば、selectedクラスを追加
+                if (selectedLabels.has(label)) {
+                    span.classList.add('selected-label');
+                }
+                // ラベルクリック時のイベントリスナーを設定
+                span.addEventListener('click', () => toggleLabelFilter(label, container));
                 labelsDiv.appendChild(span);
             });
             problemDiv.appendChild(labelsDiv);
 
             container.appendChild(problemDiv);
         });
-
-    } catch (error) {
-        // エラーが発生した場合、コンソールにログを出力し、ユーザーにメッセージを表示します。
-        console.error('Error loading or parsing JSON:', error);
-        container.textContent = 'データの読み込み中にエラーが発生しました。';
     }
+}
+
+/**
+ * ラベルがクリックされたときに、そのラベルの選択状態を切り替えます。
+ *
+ * @param {string} label - クリックされたラベルのテキスト。
+ * @param {HTMLElement} container - 問題を表示するHTML要素。
+ */
+function toggleLabelFilter(label, container) {
+    if (selectedLabels.has(label)) {
+        selectedLabels.delete(label); // 既に選択されていれば削除
+    } else {
+        selectedLabels.add(label); // 選択されていなければ追加
+    }
+    // フィルターを再適用して表示を更新
+    applyFiltersAndRender(container);
 }
 
 /**

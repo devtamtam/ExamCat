@@ -5,18 +5,141 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>院試 カテゴリ化プロジェクト</title>
     <style>
-        body { font-family: sans-serif; margin: 20px; }
-        ul { list-style-type: none; padding: 0; }
-        li { margin-bottom: 10px; }
-        a { text-decoration: none; color: #007bff; font-size: 1.1em; }
-        a:hover { text-decoration: underline; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 2.2em;
+            margin-bottom: 30px;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .subject-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .subject-item {
+            transform: translateY(0);
+            transition: all 0.3s ease;
+        }
+
+        .subject-link {
+            display: block;
+            padding: 20px 25px;
+            background: white;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #2c3e50;
+            font-size: 1.1em;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .subject-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .subject-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .subject-link:hover::before {
+            left: 100%;
+        }
+
+        .subject-japanese {
+            display: block;
+            font-size: 1.2em;
+            margin-bottom: 5px;
+        }
+
+        .subject-english {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            font-weight: 400;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .subject-link {
+                padding: 15px 20px;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>院試 科目リスト</h1>
-    <ul>
-        <li><a href="MaterialMechanics.html">材料力学 (Material Mechanics)</a></li>
-        <li><a href="ThermoDynamics.html">熱力学 (Thermodynamics)</a></li>
+    <div class="container">
+        <h1>院試 科目リスト</h1>
+        <ul class="subject-list">
+            <li class="subject-item">
+                <a href="MaterialMechanics.html" class="subject-link">
+                    <span class="subject-japanese">材料力学</span>
+                    <span class="subject-english">Material Mechanics</span>
+                </a>
+            </li>
+            <li class="subject-item">
+                <a href="thermodynamics.html" class="subject-link">
+                    <span class="subject-japanese">熱力学</span>
+                    <span class="subject-english">Thermodynamics</span>
+                </a>
+            </li>
+            <li class="subject-item">
+                <a href="fluid.html" class="subject-link">
+                    <span class="subject-japanese">流体力学</span>
+                    <span class="subject-english">Fluid Mechanics</span>
+                </a>
+            </li>
         </ul>
+    </div>
 </body>
 </html>

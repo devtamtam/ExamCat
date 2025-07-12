@@ -4,49 +4,89 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>材料力学 院試問題</title>
-   <style>
-    body { font-family: sans-serif; margin: 20px; }
-    .problem-entry {
-        border: 1px solid #ccc;
-        padding: 10px;
-        margin-bottom: 15px;
-        border-radius: 5px;
-    }
-    .problem-entry h2 {
-        margin-top: 0;
-        color: #333;
-    }
-    .labels span {
-        display: inline-block;
-        background-color: #e0f7fa;
-        color: #007bff;
-        padding: 5px 10px;
-        border-radius: 3px;
-        margin-right: 5px;
-        margin-bottom: 5px;
-        font-size: 0.9em;
-        cursor: pointer; /* クリック可能であることを示す */
-        transition: background-color 0.2s, color 0.2s; /* ホバーと選択時のアニメーション */
-    }
-    .labels span:hover {
-        background-color: #cceeff; /* ホバー時の色 */
-    }
-    .labels span.selected-label {
-        background-color: #007bff; /* 選択時の背景色 */
-        color: white; /* 選択時の文字色 */
-        font-weight: bold;
-    }
-</style>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .progress-container {
+            width: 100%;
+            background-color: #f3f3f3;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden; /* 角丸を適用するために必要 */
+        }
+        .progress-bar {
+            width: 0%; /* JavaScriptで更新 */
+            height: 30px;
+            background-color: #4CAF50; /* 緑色 */
+            text-align: center;
+            line-height: 30px;
+            color: white;
+            border-radius: 10px; /* 親要素と同じ角丸 */
+            transition: width 0.5s ease-in-out; /* 幅の変化をアニメーション */
+        }
+        .progress-text {
+            text-align: center;
+            margin-top: 5px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        .problem-entry {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        .problem-entry h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .labels span {
+            display: inline-block;
+            background-color: #e0f7fa;
+            color: #007bff;
+            padding: 5px 10px;
+            border-radius: 3px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            cursor: pointer; /* クリック可能であることを示す */
+            transition: background-color 0.2s, color 0.2s; /* ホバーと選択時のアニメーション */
+        }
+        .labels span:hover {
+            background-color: #cceeff; /* ホバー時の色 */
+        }
+        .labels span.selected-label {
+            background-color: #007bff; /* 選択時の背景色 */
+            color: white; /* 選択時の文字色 */
+            font-weight: bold;
+        }
+        /* DONEラベルのスタイル */
+        .labels span.done-label {
+            background-color: #28a745; /* DONEは緑 */
+            color: white;
+            font-weight: bold;
+            cursor: default; /* クリックできないようにする */
+        }
+        .labels span.done-label:hover {
+            background-color: #28a745; /* ホバーしても色が変わらない */
+        }
+    </style>
 </head>
 <body>
     <h1>材料力学 院試問題カテゴリ</h1>
+
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div class="progress-text" id="progressText"></div>
+
     <div id="problems-container">
-        </div>
+        <!-- Problems will be loaded here by JavaScript -->
+    </div>
 
     <script src="script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            loadProblems('MaterialMechanics.json', 'problems-container');
+            loadProblems('material-mechanics.json', 'problems-container');
         });
     </script>
 </body>

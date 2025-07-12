@@ -62,10 +62,23 @@ function applyFiltersAndRender(container) {
         problemsToDisplay = Object.fromEntries(
             Object.entries(allProblemsData).filter(([key, entry]) => {
                 // 選択されている全てのラベルが、その問題のラベルに含まれているかチェック
-                return [...selectedLabels].every(selectedLabel => entry.labels.includes(selectedLabel));
+                // ただし、"DONE"ラベルはフィルタリング対象外とする
+                const labelsToCheck = new Set([...selectedLabels].filter(label => label !== "DONE"));
+                if (labelsToCheck.size === 0 && selectedLabels.has("DONE")) {
+                    // "DONE"のみが選択されている場合、"DONE"を含む問題のみを表示
+                    return entry.labels.includes("DONE");
+                } else if (labelsToCheck.size === 0) {
+                    // フィルターが空の場合（selectedLabels.size === 0 のケースで処理済みだが念のため）
+                    return true;
+                }
+                // それ以外の場合、選択された全てのラベル（"DONE"以外）が含まれているかチェック
+                return [...labelsToCheck].every(selectedLabel => entry.labels.includes(selectedLabel));
             })
         );
     }
+
+    // プログレスバーの更新
+    updateProgressBar();
 
     // キー（例: "2025_Q1"）を年と問題番号で降順にソートします。
     // 例: 2025_Q2, 2025_Q1, 2024_Q2, 2024_Q1 ...
@@ -111,13 +124,19 @@ function applyFiltersAndRender(container) {
             entry.labels.forEach(label => {
                 const span = document.createElement('span');
                 span.textContent = label;
-                span.classList.add('label-tag'); // ラベルにクラスを追加
-                // 現在選択されているラベルであれば、selectedクラスを追加
-                if (selectedLabels.has(label)) {
-                    span.classList.add('selected-label');
+                
+                // "DONE"ラベルの場合、特別なスタイルを適用し、クリックイベントを無効にする
+                if (label === "DONE") {
+                    span.classList.add('done-label');
+                } else {
+                    span.classList.add('label-tag'); // 通常のラベルにクラスを追加
+                    // 現在選択されているラベルであれば、selectedクラスを追加
+                    if (selectedLabels.has(label)) {
+                        span.classList.add('selected-label');
+                    }
+                    // ラベルクリック時のイベントリスナーを設定
+                    span.addEventListener('click', () => toggleLabelFilter(label, container));
                 }
-                // ラベルクリック時のイベントリスナーを設定
-                span.addEventListener('click', () => toggleLabelFilter(label, container));
                 labelsDiv.appendChild(span);
             });
             problemDiv.appendChild(labelsDiv);
@@ -128,12 +147,46 @@ function applyFiltersAndRender(container) {
 }
 
 /**
+ * プログレスバーを更新します。
+ * 全問題数と"DONE"ラベルが付いた問題数をカウントし、表示を更新します。
+ */
+function updateProgressBar() {
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+
+    if (!progressBar || !progressText) {
+        console.error('Progress bar elements not found.');
+        return;
+    }
+
+    const totalProblems = Object.keys(allProblemsData).length;
+    let doneProblems = 0;
+
+    Object.values(allProblemsData).forEach(entry => {
+        if (entry.labels && entry.labels.includes("DONE")) {
+            doneProblems++;
+        }
+    });
+
+    const percentage = totalProblems > 0 ? (doneProblems / totalProblems) * 100 : 0;
+
+    progressBar.style.width = `${percentage}%`;
+    progressBar.textContent = `${Math.round(percentage)}%`;
+    progressText.textContent = `完了: ${doneProblems} / 全体: ${totalProblems}`;
+}
+
+/**
  * ラベルがクリックされたときに、そのラベルの選択状態を切り替えます。
  *
  * @param {string} label - クリックされたラベルのテキスト。
  * @param {HTMLElement} container - 問題を表示するHTML要素。
  */
 function toggleLabelFilter(label, container) {
+    // "DONE"ラベルはフィルタリング対象外なので、クリックしても何もしない
+    if (label === "DONE") {
+        return;
+    }
+
     if (selectedLabels.has(label)) {
         selectedLabels.delete(label); // 既に選択されていれば削除
     } else {
